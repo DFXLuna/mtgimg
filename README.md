@@ -1,8 +1,12 @@
 # mtgimg
 Usage: python3 main.py \<infile\>
 
-#### Input format
-\<cardname\> \n
+#### infile format
+\<cardname\>
+
+\<cardname\>
+
+etc
 
 #### TODO
 
