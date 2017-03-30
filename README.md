@@ -10,6 +10,5 @@ etc
 
 #### TODO
 
-* Increase image length, fade image to gray
-* Allow card numbers
-* Increase Legibility
+* Allow card numbers, Mana symbols
+* Refine gradient in card image
