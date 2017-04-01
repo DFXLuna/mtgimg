@@ -57,7 +57,7 @@ def procCard(n, c, frameWidth, sliceHeight, alphaGradient):
     # Convert to RGBA
     if(cropped.mode != "RGBA"): cropped = cropped.convert("RGBA")
     # apply gradient
-    grayimage = Image.new("RGBA", cropped.size, color = 0x262626)
+    grayimage = Image.new("RGBA", cropped.size, color = (26, 26, 26, 255))
     grayimage.putalpha(alphaGradient)
     cropped = Image.alpha_composite(cropped, grayimage)
     #cropped.putalpha(alphaGradient)
@@ -100,7 +100,7 @@ def parseLine(line, regObj):
 # Takes list of imageSlices, puts them together and saves an outfile
 def output(imageList, width, height):
     imageHeight = imageList[0].size[1]
-    outlist = Image.new("RGBA", (width, height), color = (26,26,26))
+    outlist = Image.new("RGBA", (width, height), color = (26, 26, 26, 255))
     for i, item in enumerate(imageList):
         outlist.paste(item, (0, imageHeight * i))
     outlist.save("exampledraft.png")
@@ -109,11 +109,12 @@ def output(imageList, width, height):
 # to an image's alpha with imageobj.putalpha(alphaGradient)
 def alphaGrad(width, height, mag = 1):
     grad = Image.new("L", (width, 1), color=0x00)
-
-    for x in range(width - 10):
-        grad.putpixel((x, 0), int(255 * (1 - mag * float(x) / width)))
-    for x in range(width - 10, width):
-        grad.putpixel((x, 0), 0)
+    for x in range(width):
+        if x < 145:
+            grad.putpixel((x,0), max(0, 255 - 8 * x))
+        else:
+            #grad.putpixel((x, 0), int(255 * (1 - mag * float(x) / width)))
+            grad.putpixel((x,0), 0)
     alpha = grad.resize((width, height))
     return alpha
 
