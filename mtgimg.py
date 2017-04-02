@@ -51,13 +51,26 @@ def main():
     # Compile regex object
     regObj = re.compile("([0-9]+) (.+)")
     # get cardnames from file and search for card objects from mtgsdk
-    cList = []
+    # Land and nonland are split to force nonlands to bottom of list
+    # results[-1] is chosen because promos are at the top of the list and
+    # may or maynot have images
+    nonland = []
+    land = []
     print("Downloading card information...")
     with open(args[0]) as f:
         for line in f:
             if(line != linesep):
                 num, cName = parseLine(line, regObj)
-                cList.append((num, Card.where(name = cName).all()[-1]))
+                results = Card.where(name = cName).all()
+                if(len(results) != 0):
+                    curr = results[-1]
+                    if(curr.type != "Land" and curr.type.find("Land") == -1):
+                        nonland.append((num, curr))
+                    else:
+                        land.append((num, curr))
+                else:
+                    print("Cannot find", cName)
+    cList = nonland + land
     # get card images and send to procCard
     imageList = []
     sliceHeight = 25
