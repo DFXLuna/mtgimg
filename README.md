@@ -1,9 +1,14 @@
 # mtgimg
+![Example image](https://github.com/DFXLuna/mtgimg/blob/master/exampledraft.png "Example image")
+
+
+Create stream ready decklists. Compatible with most decklists generated online including those by mtggoldfish.com
+
 Usage: python3 mtgimg.py [-o \<outfile\>] [-f \<fontfile\>] [-s \<fontsize\>] [-v] \<infile\>
 
 Example: python3 mtgimg.py -o Decklist.png -v decklist.txt
 
-#### infile format
+#### File format
 \<x\> \<cardname\>
 
 Example: 4 Fatal Push
