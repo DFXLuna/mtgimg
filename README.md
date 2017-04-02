@@ -14,7 +14,9 @@ Example: python3 mtgimg.py -o Decklist.png -v decklist.txt
 Example:
 
 4 Fatal Push
+
 1 Path to Exile
+
 2 Thoughseize
 
 #### Flags
