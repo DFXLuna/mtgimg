@@ -6,6 +6,7 @@ import sys
 import requests
 import re
 import getopt
+from os import linesep
 from io import BytesIO
 from PIL import Image
 from PIL import ImageFont
@@ -48,10 +49,12 @@ def main():
     regObj = re.compile("([0-9]+) (.+)")
     # get cardnames from file and search for card objects from mtgsdk
     cList = []
+    print("Downloading card information...")
     with open(args[0]) as f:
         for line in f:
-            num, cName = parseLine(line, regObj)
-            cList.append((num, Card.where(name = cName).all()[-1]))
+            if(line != linesep):
+                num, cName = parseLine(line, regObj)
+                cList.append((num, Card.where(name = cName).all()[-1]))
     # get card images and send to procCard
     imageList = []
     sliceHeight = 25
@@ -61,7 +64,11 @@ def main():
     font = ImageFont.truetype(fontName, fontSize)
     # Get uniform placement per font
     w, maxHeight = font.getsize("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
-    for n, c in cList:
+    # User message
+    print("Processing cards...")
+    end = len(cList)
+    for x, (n, c) in enumerate(cList):
+        print(x + 1, "/",end, ":", c.name)
         imageList.append(procCard(n, c, frameWidth, sliceHeight, alpha, font, maxHeight, verbose))
     # create final list
     outheight = (len(imageList) * sliceHeight)
@@ -111,7 +118,8 @@ def procCard(n, c, frameWidth, sliceHeight, alphaGradient, font, maxHeight, verb
     draw.text((x, y), imageText,(255,255,255,255), font = font)
     # Verbose output
     if verbose:
-        print(c.name, ":", image.format, image.size, image.mode)
+        print(image.format, image.size, image.mode)
+        print()
     
     return frame
 
