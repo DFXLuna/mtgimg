@@ -18,7 +18,7 @@ from mtgsdk import Card
 
 def main():
     # Variable default values
-    outname = "exampledraft.png"
+    outname = "out.png"
     fontName = "ssp.ttf"
     fontSize = 20
     verbose = False
@@ -35,6 +35,9 @@ def main():
     for o,a in opts:
         if o == '-o':
             outname = a
+            # Create output file
+            with open(outname, 'wb') as f:
+                pass
         elif o == '-f':
             fontName = a
         elif o == '-s':
