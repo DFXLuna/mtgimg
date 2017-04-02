@@ -11,7 +11,11 @@ Example: python3 mtgimg.py -o Decklist.png -v decklist.txt
 #### File format
 \<x\> \<cardname\>
 
-Example: 4 Fatal Push
+Example:
+
+4 Fatal Push
+1 Path to Exile
+2 Thoughseize
 
 #### Flags
 
