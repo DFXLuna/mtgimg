@@ -4,7 +4,7 @@ Usage: python3 mtgimg.py [-o \<outfile\>] [-f \<fontfile\>] [-s \<fontsize\>] [-
 Example: python3 mtgimg.py -o Decklist.png -v decklist.txt
 
 #### infile format
-<x> \<cardname\>
+\<x\> \<cardname\>
 
 Example: 4 Fatal Push
 
