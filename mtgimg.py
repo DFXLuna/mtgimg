@@ -28,7 +28,7 @@ def main():
         print(err)
         print("Usage: python3 mtgimg.py [-o outfile] [-f fontfile] [-s fontsize] [-v] infile")
         sys.exit(2)
-    if(len(args) > 1):
+    if(len(args) != 1):
         print("Usage: python3 mtgimg.py [-o outfile] [-f fontfile] [-s fontsize] [-v] infile")
         sys.exit(3)
     for o,a in opts:
@@ -57,21 +57,24 @@ def main():
     sliceHeight = 25
     frameWidth = 300
     alpha = alphaGrad(185, sliceHeight, mag = .95)
+    # Prepare font
+    font = ImageFont.truetype(fontName, fontSize)
+    # Get uniform placement per font
+    w, maxHeight = font.getsize("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
     for n, c in cList:
-        imageList.append(procCard(n, c, frameWidth, sliceHeight, alpha, fontName, fontSize, verbose))
+        imageList.append(procCard(n, c, frameWidth, sliceHeight, alpha, font, maxHeight, verbose))
     # create final list
     outheight = (len(imageList) * sliceHeight)
     output(imageList, frameWidth, outheight, outname, verbose)
 
 
 # Takes a card, height and width of frame and produces an image slice
-def procCard(n, c, frameWidth, sliceHeight, alphaGradient, fontName, fontSize, verbose):
+def procCard(n, c, frameWidth, sliceHeight, alphaGradient, font, maxHeight, verbose):
     # Get image from url
     response = requests.get(c.image_url)
     image = Image.open(BytesIO(response.content))
     # Crop
-    width, height = image.size
-    # Original card size 223x310, lr border: 17px, nameslate: 80px
+    # Original card size 223x310, lr border: 19px, nameslate ends: 80px
     left = 19
     right = 223 - 19
     top = 80
@@ -83,30 +86,33 @@ def procCard(n, c, frameWidth, sliceHeight, alphaGradient, fontName, fontSize, v
     grayimage = Image.new("RGBA", cropped.size, color = (26, 26, 26, 255))
     grayimage.putalpha(alphaGradient)
     cropped = Image.alpha_composite(cropped, grayimage)
-    #cropped.putalpha(alphaGradient)
     # Create frame for final list
     frame = Image.new("RGBA", (frameWidth, sliceHeight),
             color = (26,26,26, 255))
-
     # Place Image in frame
     xPos = frameWidth - cropped.size[0]
     frame.paste(cropped,(xPos, 0))
     # Draw text
     imageText = n + " " + c.name
     draw = ImageDraw.Draw(frame)
-    font = ImageFont.truetype(fontName, fontSize)
+    # Warning for string too long
+    w, h = font.getsize(c.name)
+    if(w > frameWidth or h > sliceHeight):
+        print("Warning:", c.name, "too large for frame with given font and size")
+    # print(c.name, " ", w, " ", h)
     x = 5
-    y = 0
-    #1px border
+    y = int((sliceHeight - maxHeight) / 2)
+    # 1px black  border
     draw.text((x - 1, y - 1), imageText,(0,0,0,255), font = font)
     draw.text((x + 1, y - 1), imageText,(0,0,0,255), font = font)
     draw.text((x - 1, y + 1), imageText,(0,0,0,255), font = font)
     draw.text((x + 1, y + 1), imageText,(0,0,0,255), font = font)
-    # Actual text
+    # White text
     draw.text((x, y), imageText,(255,255,255,255), font = font)
     # Verbose output
     if verbose:
         print(c.name, ":", image.format, image.size, image.mode)
+    
     return frame
 
 # Apply regex to raw line to get number and card name, returned as (num,cname)
