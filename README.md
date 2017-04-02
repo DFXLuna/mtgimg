@@ -1,14 +1,10 @@
 # mtgimg
-Usage: python3 main.py \<infile\>
+Usage: python3 mtgimg.py [-o \<outfile\>] [-f \<fontfile\>] [-s \<fontsize\>] \<infile\>
 
 #### infile format
-\<cardname\>
+X \<cardname\>
 
-\<cardname\>
+4 Fatal Push
 
-etc
+#### Flags
 
-#### TODO
-
-* Allow card numbers, Mana symbols
-* Refine gradient in card image

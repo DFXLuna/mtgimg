@@ -1,7 +1,11 @@
+# mtgimg.py
+# Copyright(C) 2017 Matt Grant(teamuba@gmail.com)
+# Full copyright notice available in LICENSE.txt
 
 import sys
 import requests
 import re
+import getopt
 from io import BytesIO
 from PIL import Image
 from PIL import ImageFont
@@ -9,23 +13,42 @@ from PIL import ImageDraw
 from mtgsdk import Card
 
 # TODO
-# Card numbers
 # Mana Cost
-# remember to change parsing in main
-# name outfile
-# specify font
-# Increase length, fade image into to gray w/ gradient
 
 def main():
+    # Variable default values
+    outname = "exampledraft.png"
+    fontName = "ssp.ttf"
+    fontSize = 20
+    verbose = False
     # check args
-    if len(sys.argv) != 2:
-        print("Usage: python3 main.py <infile>")
-        sys.exit()
+    try:
+        opts, args = getopt.getopt(sys.argv[1:], "o:f:s:v")
+    except getopt.GetoptError as err:
+        print(err)
+        print("Usage: python3 mtgimg.py [-o outfile] [-f fontfile] [-s fontsize] [-v] infile")
+        sys.exit(2)
+    if(len(args) > 1):
+        print("Usage: python3 mtgimg.py [-o outfile] [-f fontfile] [-s fontsize] [-v] infile")
+        sys.exit(3)
+    for o,a in opts:
+        if o == '-o':
+            outname = a
+        elif o == '-f':
+            fontName = a
+        elif o == '-s':
+            fontSize = int(a)
+        elif o == '-v':
+            verbose = True
+        else:
+            print(o)
+            print("Usage: python3 mtgimg.py [-o outfile] [-f fontfile] [-s fontsize] [-v] infile")
+            sys.exit(4)
     # Compile regex object
     regObj = re.compile("([0-9]+) (.+)")
     # get cardnames from file and search for card objects from mtgsdk
     cList = []
-    with open(str(sys.argv[1])) as f:
+    with open(args[0]) as f:
         for line in f:
             num, cName = parseLine(line, regObj)
             cList.append((num, Card.where(name = cName).all()[-1]))
@@ -35,14 +58,14 @@ def main():
     frameWidth = 300
     alpha = alphaGrad(185, sliceHeight, mag = .95)
     for n, c in cList:
-        imageList.append(procCard(n, c, frameWidth, sliceHeight, alpha))
+        imageList.append(procCard(n, c, frameWidth, sliceHeight, alpha, fontName, fontSize, verbose))
     # create final list
     outheight = (len(imageList) * sliceHeight)
-    output(imageList, frameWidth, outheight)
+    output(imageList, frameWidth, outheight, outname, verbose)
 
 
 # Takes a card, height and width of frame and produces an image slice
-def procCard(n, c, frameWidth, sliceHeight, alphaGradient):
+def procCard(n, c, frameWidth, sliceHeight, alphaGradient, fontName, fontSize, verbose):
     # Get image from url
     response = requests.get(c.image_url)
     image = Image.open(BytesIO(response.content))
@@ -70,9 +93,8 @@ def procCard(n, c, frameWidth, sliceHeight, alphaGradient):
     frame.paste(cropped,(xPos, 0))
     # Draw text
     imageText = n + " " + c.name
-    fontsize = 20
     draw = ImageDraw.Draw(frame)
-    font = ImageFont.truetype("ssp.ttf", fontsize)
+    font = ImageFont.truetype(fontName, fontSize)
     x = 5
     y = 0
     #1px border
@@ -82,8 +104,9 @@ def procCard(n, c, frameWidth, sliceHeight, alphaGradient):
     draw.text((x + 1, y + 1), imageText,(0,0,0,255), font = font)
     # Actual text
     draw.text((x, y), imageText,(255,255,255,255), font = font)
-    # Output
-    print(c.name, ":", image.format, image.size, image.mode)
+    # Verbose output
+    if verbose:
+        print(c.name, ":", image.format, image.size, image.mode)
     return frame
 
 # Apply regex to raw line to get number and card name, returned as (num,cname)
@@ -98,12 +121,17 @@ def parseLine(line, regObj):
 
 
 # Takes list of imageSlices, puts them together and saves an outfile
-def output(imageList, width, height):
+def output(imageList, width, height, outname, verbose):
+    # Build image
     imageHeight = imageList[0].size[1]
     outlist = Image.new("RGBA", (width, height), color = (26, 26, 26, 255))
     for i, item in enumerate(imageList):
         outlist.paste(item, (0, imageHeight * i))
-    outlist.save("exampledraft.png")
+    # Verbose output
+    if verbose:
+        print(outname, ": ", outlist.format, outlist.size, outlist.mode)
+    # Save file
+    outlist.save(outname)
 
 # Takes an image width, height and returns a gradient that can be applied 
 # to an image's alpha with imageobj.putalpha(alphaGradient)
@@ -113,7 +141,6 @@ def alphaGrad(width, height, mag = 1):
         if x < 145:
             grad.putpixel((x,0), max(0, 255 - 8 * x))
         else:
-            #grad.putpixel((x, 0), int(255 * (1 - mag * float(x) / width)))
             grad.putpixel((x,0), 0)
     alpha = grad.resize((width, height))
     return alpha
