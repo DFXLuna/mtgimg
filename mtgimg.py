@@ -51,10 +51,11 @@ def main():
     # Compile regex object
     regObj = re.compile("([0-9]+) (.+)")
     # get cardnames from file and search for card objects from mtgsdk
-    # Land and nonland are split to force nonlands to bottom of list
+    # Catagories are split for organization in final list
     # results[-1] is chosen because promos are at the top of the list and
-    # may or maynot have images
-    nonland = []
+    # may or may not have images
+    creatures = []
+    noncreatures = []
     land = []
     print("Downloading card information...")
     with open(args[0]) as f:
@@ -64,13 +65,17 @@ def main():
                 results = Card.where(name = cName).all()
                 if(len(results) != 0):
                     curr = results[-1]
-                    if(curr.type != "Land" and curr.type.find("Land") == -1):
-                        nonland.append((num, curr))
-                    else:
+                    if(curr.type == "Creature" or curr.type.find("Creature") != -1):
+                        creatures.append((num, curr))
+                    elif(curr.type == "Land" or curr.type.find("Land") != -1):
                         land.append((num, curr))
+                    else:
+                        noncreatures.append((num,curr))
                 else:
                     print("Cannot find", cName)
-    cList = nonland + land
+    creatures.sort(key=getcmc)
+    noncreatures.sort(key=getcmc)
+    cList = creatures + noncreatures + land
     # get card images and send to procCard
     imageList = []
     sliceHeight = 25
@@ -78,9 +83,8 @@ def main():
     alpha = alphaGrad(185, sliceHeight, mag = .95)
     # Prepare font
     font = ImageFont.truetype(fontName, fontSize)
-    # Get uniform placement per font
+    # For uniform placement per font
     w, maxHeight = font.getsize("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
-    # User message
     print("Processing cards...")
     end = len(cList)
     for x, (n, c) in enumerate(cList):
@@ -174,6 +178,11 @@ def alphaGrad(width, height, mag = 1):
             grad.putpixel((x,0), 0)
     alpha = grad.resize((width, height))
     return alpha
+
+
+# extracts cmc of card from a pair (num, card) for sorting
+def getcmc(tobj):
+    return tobj[1].cmc
 
 if __name__ == "__main__":
     main()
