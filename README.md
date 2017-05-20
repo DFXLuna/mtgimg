@@ -1,5 +1,5 @@
 # mtgimg
-![Example image](https://github.com/DFXLuna/mtgimg/blob/master/exampledraft.png "Example image")
+![Example image](https://github.com/DFXLuna/mtgimg/blob/master/out.png "Example image")
 
 
 Create stream ready decklists. Compatible with most decklists generated online including those by mtggoldfish.com
